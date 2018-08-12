@@ -2,14 +2,26 @@
 #include "network.h"
 #include "entity.h"
 #include "maps.h"
+
 #include <fstream>
+#include <mutex>
+#include <thread>
 
 struct player {
 	sockaddr_in addr;
-	int sockfd;
+	socklen_t socklen;
+	int fd;
 	int id;
 	faction fact;
+	bool quit = false;
 };
+
+void player_listener(player *p)
+{
+	while (!p->quit) {
+
+	}
+}
 
 int main (int argc, char* argv[])
 {
@@ -27,20 +39,29 @@ int main (int argc, char* argv[])
 	map.read_map(f);
 
 	//connect clients
-	int sockfd_r;
-	sockaddr_in sock_addr_r;
 	char buffer[BUFFER_SIZE];
-	receiver_init(sockfd_r, sock_addr_r);
-	std::vector<player> players;
+	std::vector<player *> players;
 	std::cout << "Ready to connect to clients" << std::endl;
 	for (int i = 0; i < atoi(argv[2]); i++) {
 		player temp;
+		receiver_init(temp.fd, temp.addr);
 		temp.id = i + 1;
-		simple_receive(sockfd_r, sock_addr_r, buffer);
-		temp.fact = (faction)buffer[0];
-		players.push_back(temp);
+		do {
+			simple_receive(temp.fd, temp.addr, buffer);
+		} while (buffer[0] != 1);
+		temp.fact = (faction)buffer[1];
+		players.push_back(&temp);
 		std::cout << "player " << temp.id << " connected as " << NAME[temp.fact] << std::endl;
 	}
-       
+
+	std::vector<std::thread *> listeners;
+	listeners.reserve(players.size());
+	for (int i = 0; i < players.size(); i++) {
+		listeners.push_back(new std::thread([=]() {
+						player_listener(players[i]);
+					}));
+		std::cout << "started listener thread for player " << players[i]->id << std::endl;
+	}
+
 	return 0;
 }

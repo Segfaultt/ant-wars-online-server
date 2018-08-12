@@ -26,3 +26,14 @@ const int PORT_CLIENT = 52757,
 const unsigned int BUFFER_SIZE = 512;
 
 const std::string VERSION = "s0.0";
+
+const double PI = 3.14159265359;
+
+/*packet rules*/
+/* 0XXXX - network info
+   06000 - ACK packet
+   1FXXX - client joining (F - theme/faction)
+   2 x y z 0 - 32 bit - set camera (x - x coord, y - y coord, z - zoom * 100) 
+*/
+
+const char ACK[] = {0, 6};

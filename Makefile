@@ -2,7 +2,7 @@ CC = g++
 
 C_FLAGS = -w -std=c++11 -g
 
-L_FLAGS = 
+L_FLAGS = -pthread
 
 OBJ_NAME = ant_wars_colonial_server
 
