@@ -77,25 +77,24 @@ int main(int argc, char *argv[]) {
             players[i]->c_z = z_init;
 
             // send set camera packet
-            wait_for_ack(players[i]->fd, players[i]->addr);
             std::memset(buffer, 0, BUFFER_SIZE);
             buffer[0] = 2;
             int a = 1;
             uint32_to_uint8_t(x_init, buffer, a);
             uint32_to_uint8_t(y_init, buffer, a);
             uint32_to_uint8_t(z_init * 1024, buffer, a);
-            simple_send(players[i]->fd, players[i]->addr, buffer);
-            std::cout << "recieved ack, setting player " << players[i]->id
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            std::cout << "setting player " << players[i]->id
                       << " camera to (" << x_init << ", " << y_init
                       << ") with zoom: " << z_init << std::endl;
+            simple_send(players[i]->fd, players[i]->addr, buffer);
 
             //---=== set player map ===---
             std::memset(buffer, 0, BUFFER_SIZE);
             buffer[0] = 4;
             std::memcpy((buffer + 1), argv[1], strlen(argv[1]));
-            std::cout << buffer << std::endl;
-            wait_for_ack(players[i]->fd, players[i]->addr);
-            std::cout << "received ack, sending map to player" << players[i]->id
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            std::cout << "sending map to player" << players[i]->id
                       << std::endl;
             simple_send(players[i]->fd, players[i]->addr, buffer);
       }
