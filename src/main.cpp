@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
             uint32_to_uint8_t(x_init, buffer, a);
             uint32_to_uint8_t(y_init, buffer, a);
             uint32_to_uint8_t(z_init * 1024, buffer, a);
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
             std::cout << "setting player " << players[i]->id
                       << " camera to (" << x_init << ", " << y_init
                       << ") with zoom: " << z_init << std::endl;
@@ -93,7 +93,7 @@ int main(int argc, char *argv[]) {
             std::memset(buffer, 0, BUFFER_SIZE);
             buffer[0] = 4;
             std::memcpy((buffer + 1), argv[1], strlen(argv[1]));
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
             std::cout << "sending map to player" << players[i]->id
                       << std::endl;
             simple_send(players[i]->fd, players[i]->addr, buffer);
@@ -101,19 +101,21 @@ int main(int argc, char *argv[]) {
 
       auto t1 = std::chrono::high_resolution_clock::now();
       auto dt = std::chrono::high_resolution_clock::now() - t1;
+      double count = 0;
       while (true) {
             // testing code
             std::memset(buffer, 0, BUFFER_SIZE);
             buffer[0] = 3;
             int a = 1;
             uint32_to_uint8_t(1, buffer, a);
-            uint32_to_uint8_t(NIPPER, buffer, a);
+            
+            /*uint32_to_uint8_t(NIPPER, buffer, a);
             uint32_to_uint8_t(0, buffer, a);
-            uint32_to_uint8_t(0 + 100 * dt.count(), buffer, a);
-            uint32_to_uint8_t(2, buffer, a);
+            uint32_to_uint8_t(0 + 100 *a* dt.count(), buffer, a);
+            uint32_to_uint8_t(2, buffer, a);*/
             uint32_to_uint8_t(FLYING, buffer, a);
-            uint32_to_uint8_t(500, buffer, a);
-            uint32_to_uint8_t(500, buffer, a);
+            uint32_to_uint8_t(300*sin(count++/500000), buffer, a);
+            uint32_to_uint8_t(0, buffer, a);
             simple_send(players[0]->fd, players[0]->addr, buffer, BUFFER_SIZE);
 
             // cap loop speed
