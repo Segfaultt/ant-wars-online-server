@@ -4,7 +4,7 @@ C_FLAGS = -w -std=c++11 -g
 
 L_FLAGS = -pthread
 
-OBJ_NAME = ant_wars_colonial_server
+OBJ_NAME = ant_wars_online_server
 
 OBJS = obj/main.o obj/entity.o obj/network.o obj/maps.o
 

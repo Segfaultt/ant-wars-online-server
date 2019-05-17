@@ -8,6 +8,9 @@
 #include <mutex>
 #include <thread>
 
+// temp
+visual_entity test_ant = {1, FLYING, 0, 0, 100, 100, 100};
+
 struct player {
       sockaddr_in addr;
       socklen_t socklen;
@@ -24,7 +27,34 @@ void player_listener(player *p) {
       while (!p->quit) {
             std::memset(buff, 0, BUFFER_SIZE);
             simple_receive(p->fd, p->addr, buff);
-            switch (buff[0]) {}
+            switch (buff[0]) {
+            case 5: // move forward temp
+                  const int speed = 100;
+                  switch (buff[1]) {
+                          case 0:
+			  test_ant.x += speed*cos(test_ant.angle*PI/180);
+			  test_ant.y += speed*sin(test_ant.angle*PI/180);
+                          break;
+ 
+                          case 1:
+			  test_ant.x -= speed*cos(test_ant.angle*PI/180);
+			  test_ant.y -= speed*sin(test_ant.angle*PI/180);
+                          break;
+
+                          case 2:
+			  test_ant.angle += 5;
+                          test_ant.angle = (test_ant.angle+360)%360;
+				std::cout << test_ant.angle << std::endl;
+                          break;
+
+                          case 3:
+			  test_ant.angle -= 5;
+                          test_ant.angle = (test_ant.angle+360)%360;
+				std::cout << test_ant.angle << std::endl;
+                          break;
+                  }
+                  break;
+            }
       }
 }
 
@@ -84,9 +114,9 @@ int main(int argc, char *argv[]) {
             uint32_to_uint8_t(y_init, buffer, a);
             uint32_to_uint8_t(z_init * 1024, buffer, a);
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            std::cout << "setting player " << players[i]->id
-                      << " camera to (" << x_init << ", " << y_init
-                      << ") with zoom: " << z_init << std::endl;
+            std::cout << "setting player " << players[i]->id << " camera to ("
+                      << x_init << ", " << y_init << ") with zoom: " << z_init
+                      << std::endl;
             simple_send(players[i]->fd, players[i]->addr, buffer);
 
             //---=== set player map ===---
@@ -94,8 +124,7 @@ int main(int argc, char *argv[]) {
             buffer[0] = 4;
             std::memcpy((buffer + 1), argv[1], strlen(argv[1]));
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            std::cout << "sending map to player" << players[i]->id
-                      << std::endl;
+            std::cout << "sending map to player" << players[i]->id << std::endl;
             simple_send(players[i]->fd, players[i]->addr, buffer);
       }
 
@@ -107,15 +136,8 @@ int main(int argc, char *argv[]) {
             std::memset(buffer, 0, BUFFER_SIZE);
             buffer[0] = 3;
             int a = 1;
-            uint32_to_uint8_t(1, buffer, a);
-            
-            /*uint32_to_uint8_t(NIPPER, buffer, a);
-            uint32_to_uint8_t(0, buffer, a);
-            uint32_to_uint8_t(0 + 100 *a* dt.count(), buffer, a);
-            uint32_to_uint8_t(2, buffer, a);*/
-            uint32_to_uint8_t(FLYING, buffer, a);
-            uint32_to_uint8_t(300*sin(count++/500000), buffer, a);
-            uint32_to_uint8_t(0, buffer, a);
+
+            test_ant.add_to_buff(buffer, a);
             simple_send(players[0]->fd, players[0]->addr, buffer, BUFFER_SIZE);
 
             // cap loop speed

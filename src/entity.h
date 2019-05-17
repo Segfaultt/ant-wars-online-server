@@ -21,4 +21,6 @@ struct visual_entity {
       int health, stamina;
 
       friend std::ostream &operator<<(std::ostream &os, visual_entity &ve);
+
+      void add_to_buff(uint8_t* buff, int& a);
 };
