@@ -8,15 +8,14 @@
 #include <mutex>
 #include <thread>
 
-// temp
-visual_entity test_ant = {1, FLYING, 0, 0, 100, 100, 100};
+int id_count = 1;
 
 struct player {
       sockaddr_in addr;
       socklen_t socklen;
       int fd;
       int id;
-      faction fact;
+      visual_entity ant;
       bool quit = false;
       int c_x, c_y, c_z;
 };
@@ -32,25 +31,23 @@ void player_listener(player *p) {
                   const int speed = 100;
                   switch (buff[1]) {
                           case 0:
-			  test_ant.x += speed*cos(test_ant.angle*PI/180);
-			  test_ant.y += speed*sin(test_ant.angle*PI/180);
+			  p->ant.x += speed*cos(p->ant.angle*PI/180);
+			  p->ant.y += speed*sin(p->ant.angle*PI/180);
                           break;
  
                           case 1:
-			  test_ant.x -= speed*cos(test_ant.angle*PI/180);
-			  test_ant.y -= speed*sin(test_ant.angle*PI/180);
+			  p->ant.x -= speed*cos(p->ant.angle*PI/180);
+			  p->ant.y -= speed*sin(p->ant.angle*PI/180);
                           break;
 
                           case 2:
-			  test_ant.angle += 5;
-                          test_ant.angle = (test_ant.angle+360)%360;
-				std::cout << test_ant.angle << std::endl;
+			  p->ant.angle += 5;
+                          p->ant.angle = (p->ant.angle+360)%360;
                           break;
 
                           case 3:
-			  test_ant.angle -= 5;
-                          test_ant.angle = (test_ant.angle+360)%360;
-				std::cout << test_ant.angle << std::endl;
+			  p->ant.angle -= 5;
+                          p->ant.angle = (p->ant.angle+360)%360;
                           break;
                   }
                   break;
@@ -85,10 +82,15 @@ int main(int argc, char *argv[]) {
             do {
                   simple_receive(temp.fd, temp.addr, buffer);
             } while (buffer[0] != 1);
-            temp.fact = (faction)buffer[1];
+            temp.ant.et = (entity_type)buffer[1];
+            temp.ant.id = id_count++;
+            temp.ant.health = 100;
+            temp.ant.stamina = 100;
+            temp.ant.x = 0;
+            temp.ant.y = 0;
             players.push_back(&temp);
             std::cout << "player " << temp.id << " connected as "
-                      << NAME[temp.fact] << std::endl;
+                      << temp.ant.et << std::endl;
       }
       std::vector<std::thread *> listeners;
       listeners.reserve(players.size());
@@ -99,7 +101,7 @@ int main(int argc, char *argv[]) {
                       << std::endl;
 
             //---=== set camera ===---
-            const int x_init = 0, y_init = 0;
+            const int x_init = players[i]->ant.x, y_init = players[i]->ant.y;
             const float z_init = 1;
 
             players[i]->c_x = x_init;
@@ -137,7 +139,9 @@ int main(int argc, char *argv[]) {
             buffer[0] = 3;
             int a = 1;
 
-            test_ant.add_to_buff(buffer, a);
+            for (auto player : players) {
+		player->ant.add_to_buff(buffer, a);
+            }
             simple_send(players[0]->fd, players[0]->addr, buffer, BUFFER_SIZE);
 
             // cap loop speed

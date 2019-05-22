@@ -1,5 +1,7 @@
 #include "common.h"
 
+#include <climits>
+
 struct coord {
       int x, y;
       friend std::ostream &operator<<(std::ostream &os, coord coord);
@@ -72,4 +74,22 @@ void coord::read_coord(std::istream &is) {
       x = atoi(transfer);
       is.getline(transfer, 256);
       y = atoi(transfer);
+}
+
+coord max_vector(std::vector<coord> v) {
+        coord final = {INT_MIN, INT_MIN};
+        for (coord i : v) {
+             final.x = std::max(final.x, i.x);
+             final.y = std::max(final.y, i.y);
+        }
+
+	return final;
+}
+
+coord max_vector(std::vector<std::vector<coord>> v) {
+        coord final = {INT_MIN, INT_MIN};
+        for (auto i : v) 
+             final = max_vector(i);
+
+	return final;
 }

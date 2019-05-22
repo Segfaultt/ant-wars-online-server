@@ -14,3 +14,6 @@ struct map {
       void read_map(std::istream &is);
       friend std::ostream &operator<<(std::ostream &os, map map);
 };
+
+coord max_vector(std::vector<coord> v);
+coord max_vector(std::vector<std::vector<coord>> v);

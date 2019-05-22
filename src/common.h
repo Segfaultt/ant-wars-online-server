@@ -10,13 +10,9 @@
 #include <sys/socket.h>
 #include <vector>
 
-enum faction { GOTH, ROMAN, CELT, LAST_FACTION };
+const std::string font = "res/Roman SD.ttf";
 
-const std::string FONT[] = {"res/Autobahn.ttf", "res/Roman SD.ttf",
-                            "res/Red October.ttf"},
-                  NAME[] = {"Goths", "Roman Empire", "Celts"};
-
-const int PORT_CLIENT = 52757, PORT_SERVER = 52657;
+const int PORT_CLIENT = 52390, PORT_SERVER = 52053;
 
 const unsigned int BUFFER_SIZE = 511;
 
