@@ -8,8 +8,6 @@
 #include <mutex>
 #include <thread>
 
-int id_count = 1;
-
 struct player {
       sockaddr_in addr;
       socklen_t socklen;
@@ -30,25 +28,25 @@ void player_listener(player *p) {
             case 5: // move forward temp
                   const int speed = 100;
                   switch (buff[1]) {
-                          case 0:
-			  p->ant.x += speed*cos(p->ant.angle*PI/180);
-			  p->ant.y += speed*sin(p->ant.angle*PI/180);
-                          break;
- 
-                          case 1:
-			  p->ant.x -= speed*cos(p->ant.angle*PI/180);
-			  p->ant.y -= speed*sin(p->ant.angle*PI/180);
-                          break;
+                  case 0:
+                        p->ant.x += speed * cos(p->ant.angle * PI / 180);
+                        p->ant.y += speed * sin(p->ant.angle * PI / 180);
+                        break;
 
-                          case 2:
-			  p->ant.angle += 5;
-                          p->ant.angle = (p->ant.angle+360)%360;
-                          break;
+                  case 1:
+                        p->ant.x -= speed * cos(p->ant.angle * PI / 180);
+                        p->ant.y -= speed * sin(p->ant.angle * PI / 180);
+                        break;
 
-                          case 3:
-			  p->ant.angle -= 5;
-                          p->ant.angle = (p->ant.angle+360)%360;
-                          break;
+                  case 2:
+                        p->ant.angle += 5;
+                        p->ant.angle = (p->ant.angle + 360) % 360;
+                        break;
+
+                  case 3:
+                        p->ant.angle -= 5;
+                        p->ant.angle = (p->ant.angle + 360) % 360;
+                        break;
                   }
                   break;
             }
@@ -83,14 +81,14 @@ int main(int argc, char *argv[]) {
                   simple_receive(temp.fd, temp.addr, buffer);
             } while (buffer[0] != 1);
             temp.ant.et = (entity_type)buffer[1];
-            temp.ant.id = id_count++;
+            temp.ant.id = temp.id;
             temp.ant.health = 100;
             temp.ant.stamina = 100;
             temp.ant.x = 0;
             temp.ant.y = 0;
             players.push_back(&temp);
-            std::cout << "player " << temp.id << " connected as "
-                      << temp.ant.et << std::endl;
+            std::cout << "player " << temp.id << " connected as " << temp.ant.et
+                      << std::endl;
       }
       std::vector<std::thread *> listeners;
       listeners.reserve(players.size());
@@ -100,25 +98,14 @@ int main(int argc, char *argv[]) {
             std::cout << "started listener thread for player " << players[i]->id
                       << std::endl;
 
-            //---=== set camera ===---
-            const int x_init = players[i]->ant.x, y_init = players[i]->ant.y;
-            const float z_init = 1;
-
-            players[i]->c_x = x_init;
-            players[i]->c_y = y_init;
-            players[i]->c_z = z_init;
-
-            // send set camera packet
+            // send visual entity ID
             std::memset(buffer, 0, BUFFER_SIZE);
             buffer[0] = 2;
             int a = 1;
-            uint32_to_uint8_t(x_init, buffer, a);
-            uint32_to_uint8_t(y_init, buffer, a);
-            uint32_to_uint8_t(z_init * 1024, buffer, a);
+            uint32_to_uint8_t(i, buffer, a);
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            std::cout << "setting player " << players[i]->id << " camera to ("
-                      << x_init << ", " << y_init << ") with zoom: " << z_init
-                      << std::endl;
+            std::cout << "Telling player " << players[i]->id
+                      << " their visual entity ID" << std::endl;
             simple_send(players[i]->fd, players[i]->addr, buffer);
 
             //---=== set player map ===---
@@ -134,13 +121,13 @@ int main(int argc, char *argv[]) {
       auto dt = std::chrono::high_resolution_clock::now() - t1;
       double count = 0;
       while (true) {
-            // testing code
+            // send render list
             std::memset(buffer, 0, BUFFER_SIZE);
             buffer[0] = 3;
             int a = 1;
 
             for (auto player : players) {
-		player->ant.add_to_buff(buffer, a);
+                  player->ant.add_to_buff(buffer, a);
             }
             simple_send(players[0]->fd, players[0]->addr, buffer, BUFFER_SIZE);
 
